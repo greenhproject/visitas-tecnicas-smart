@@ -21,12 +21,12 @@
 - [ ] Descarga de informes generados
 
 ## Fase 3: Sistema de Visitas Técnicas
-- [ ] Crear página de visita con link único
-- [ ] Implementar captura de fotos desde cámara del cliente
-- [ ] Subir fotos a S3 con storagePut
-- [ ] Guardar respuestas del cliente en base de datos
-- [ ] Validar que todas las preguntas obligatorias estén respondidas
-- [ ] Mostrar progreso de la visita al cliente
+- [x] Crear página de visita con link único
+- [x] Implementar captura de fotos desde cámara del cliente
+- [x] Subir fotos a S3 con storagePut
+- [x] Guardar respuestas del cliente en base de datos
+- [x] Validar que todas las preguntas obligatorias estén respondidas
+- [x] Mostrar progreso de la visita al cliente
 
 ## Fase 4: Integración con HeyGen Avatar IA
 - [ ] Investigar y configurar HeyGen API

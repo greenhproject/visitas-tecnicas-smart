@@ -129,6 +129,30 @@ export const appRouter = router({
       }),
   }),
 
+  // Answers
+  answers: router({
+    create: publicProcedure
+      .input(
+        z.object({
+          visitId: z.number(),
+          questionId: z.number(),
+          answerText: z.string().optional(),
+          answerNumber: z.number().optional(),
+          answerBoolean: z.number().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { createAnswer } = await import("./db");
+        return await createAnswer(input);
+      }),
+    getByVisit: publicProcedure
+      .input(z.object({ visitId: z.number() }))
+      .query(async ({ input }) => {
+        const { getAnswersByVisitId } = await import("./db");
+        return await getAnswersByVisitId(input.visitId);
+      }),
+  }),
+
   // Technical Visits
   visits: router({
     list: protectedProcedure.query(async () => {
@@ -152,13 +176,15 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        const { createTechnicalVisit } = await import("./db");
+        const { createTechnicalVisit, getTechnicalVisits } = await import("./db");
         const crypto = await import("crypto");
         const uniqueToken = crypto.randomBytes(32).toString("hex");
-        return await createTechnicalVisit({
+        await createTechnicalVisit({
           ...input,
           uniqueToken,
         });
+        // Devolver el token generado
+        return { uniqueToken };
       }),
     update: protectedProcedure
       .input(
