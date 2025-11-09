@@ -289,6 +289,28 @@ export const appRouter = router({
       const token = await getHeyGenAccessToken();
       return { token };
     }),
+    createSession: publicProcedure
+      .input(
+        z.object({
+          quality: z.enum(["high", "medium", "low"]),
+          avatarId: z.string(),
+          voiceId: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { createHeyGenSession } = await import("./heygen");
+        return await createHeyGenSession(input);
+      }),
+    startSession: publicProcedure
+      .input(
+        z.object({
+          sessionId: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { startHeyGenSession } = await import("./heygen");
+        return await startHeyGenSession(input.sessionId);
+      }),
     listAvatars: protectedProcedure.query(async () => {
       const { listHeyGenAvatars } = await import("./heygen");
       const avatars = await listHeyGenAvatars();

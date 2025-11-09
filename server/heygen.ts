@@ -1,10 +1,115 @@
 /**
- * Funciones para integración con HeyGen Interactive Avatar API
+ * Funciones para integración con HeyGen Interactive Avatar API (v2)
  */
 
+interface CreateSessionParams {
+  quality: "high" | "medium" | "low";
+  avatarId: string;
+  voiceId: string;
+}
+
+interface SessionData {
+  session_id: string;
+  url: string;
+  access_token: string;
+  session_duration_limit: number;
+  is_paid: boolean;
+}
+
 /**
- * Obtiene un token de acceso temporal para el Streaming Avatar SDK
- * Este token se genera en el servidor y se envía al cliente
+ * Crea una nueva sesión de streaming con HeyGen
+ */
+export async function createHeyGenSession(params: CreateSessionParams): Promise<SessionData> {
+  const apiKey = process.env.HEYGEN_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error("HEYGEN_API_KEY no está configurada");
+  }
+
+  try {
+    const response = await fetch(
+      "https://api.heygen.com/v1/streaming.new",
+      {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          quality: params.quality,
+          avatar_id: params.avatarId,
+          voice: {
+            voice_id: params.voiceId,
+            rate: 1,
+          },
+          video_encoding: "VP8",
+          version: "v2",
+          disable_idle_timeout: false,
+          activity_idle_timeout: 120,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error de HeyGen API:", errorData);
+      throw new Error(`Error de HeyGen API: ${JSON.stringify(errorData)}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.data) {
+      throw new Error("Respuesta inválida de HeyGen API");
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error("Error al crear sesión de HeyGen:", error);
+    throw error;
+  }
+}
+
+/**
+ * Inicia una sesión de streaming existente
+ */
+export async function startHeyGenSession(sessionId: string): Promise<{ status: string }> {
+  const apiKey = process.env.HEYGEN_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error("HEYGEN_API_KEY no está configurada");
+  }
+
+  try {
+    const response = await fetch(
+      "https://api.heygen.com/v1/streaming.start",
+      {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error al iniciar sesión:", errorData);
+      throw new Error(`Error al iniciar sesión: ${JSON.stringify(errorData)}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error al iniciar sesión de HeyGen:", error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene un token de acceso temporal (deprecado, usar createHeyGenSession)
  */
 export async function getHeyGenAccessToken(): Promise<string> {
   const apiKey = process.env.HEYGEN_API_KEY;

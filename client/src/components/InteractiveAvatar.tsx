@@ -1,176 +1,147 @@
 import { useEffect, useRef, useState } from "react";
-import StreamingAvatar, {
-  AvatarQuality,
-  StreamingEvents,
-  TaskType,
-} from "@heygen/streaming-avatar";
-import { Button } from "@/components/ui/button";
-import { Loader2, Mic, MicOff, Video, VideoOff } from "lucide-react";
+import {
+  Room,
+  RoomEvent,
+  Track,
+  RemoteTrack,
+  RemoteTrackPublication,
+  RemoteParticipant,
+} from "livekit-client";
+import { Button } from "./ui/button";
+import { Loader2, Video, VideoOff } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 interface InteractiveAvatarProps {
   onReady?: () => void;
   onSpeakingStart?: () => void;
   onSpeakingEnd?: () => void;
-  apiKey: string;
+  apiKey?: string;
 }
 
 export default function InteractiveAvatar({
   onReady,
   onSpeakingStart,
   onSpeakingEnd,
-  apiKey,
 }: InteractiveAvatarProps) {
   const [isLoadingSession, setIsLoadingSession] = useState(false);
-  const [isLoadingRepeat, setIsLoadingRepeat] = useState(false);
-  const [stream, setStream] = useState<MediaStream>();
-  const [sessionData, setSessionData] = useState<any>();
-  const [isMuted, setIsMuted] = useState(false);
-  const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const roomRef = useRef<Room | null>(null);
 
-  const mediaStream = useRef<HTMLVideoElement>(null);
-  const avatar = useRef<StreamingAvatar | null>(null);
-
-  async function fetchAccessToken() {
-    try {
-      // En producción, esto debería venir del backend
-      return apiKey;
-    } catch (error) {
-      console.error("Error al obtener access token:", error);
-      return "";
-    }
-  }
-
-  async function startSession() {
-    setIsLoadingSession(true);
-    const newToken = await fetchAccessToken();
-
-    avatar.current = new StreamingAvatar({
-      token: newToken,
-    });
-
-    avatar.current.on(StreamingEvents.AVATAR_START_TALKING, (e) => {
-      console.log("Avatar started talking", e);
-      onSpeakingStart?.();
-    });
-
-    avatar.current.on(StreamingEvents.AVATAR_STOP_TALKING, (e) => {
-      console.log("Avatar stopped talking", e);
-      onSpeakingEnd?.();
-    });
-
-    avatar.current.on(StreamingEvents.STREAM_DISCONNECTED, () => {
-      console.log("Stream disconnected");
-      endSession();
-    });
-
-    avatar.current?.on(StreamingEvents.STREAM_READY, (event) => {
-      console.log("Stream ready:", event.detail);
-      setStream(event.detail);
-      onReady?.();
-    });
-
-    try {
-      const res = await avatar.current.createStartAvatar({
-        quality: AvatarQuality.High,
-        avatarName: "0f97b240e94a491aa47e27c0a038c7de", // Avatar personalizado de GreenH Project
-        voice: {
-          voiceId: "5d29644883bf4359b4d561a5db2dd740", // Voz clonada personalizada de GreenH Project
-        },
-        language: "es",
-      });
-
-      setSessionData(res);
-      toast.success("Sesión de avatar iniciada");
-    } catch (error) {
-      console.error("Error al iniciar sesión:", error);
-      toast.error("Error al iniciar sesión de avatar");
-    } finally {
-      setIsLoadingSession(false);
-    }
-  }
-
-  async function handleSpeak(text: string) {
-    setIsLoadingRepeat(true);
-    if (!avatar.current) {
-      toast.error("Avatar no inicializado");
-      return;
-    }
-
-    try {
-      await avatar.current.speak({
-        text: text,
-        taskType: TaskType.REPEAT,
-      });
-    } catch (error) {
-      console.error("Error al hablar:", error);
-      toast.error("Error al hacer hablar al avatar");
-    } finally {
-      setIsLoadingRepeat(false);
-    }
-  }
-
-  async function handleInterrupt() {
-    if (!avatar.current) {
-      toast.error("Avatar no inicializado");
-      return;
-    }
-
-    try {
-      await avatar.current.interrupt();
-    } catch (error) {
-      console.error("Error al interrumpir:", error);
-      toast.error("Error al interrumpir al avatar");
-    }
-  }
-
-  async function endSession() {
-    if (!avatar.current) {
-      return;
-    }
-
-    try {
-      await avatar.current.stopAvatar();
-      setStream(undefined);
-      setSessionData(undefined);
-    } catch (error) {
-      console.error("Error al terminar sesión:", error);
-    }
-  }
-
-  useEffect(() => {
-    if (stream && mediaStream.current) {
-      mediaStream.current.srcObject = stream;
-      mediaStream.current.onloadedmetadata = () => {
-        mediaStream.current!.play();
-      };
-    }
-  }, [stream]);
+  const createSessionMutation = trpc.heygen.createSession.useMutation();
+  const startSessionMutation = trpc.heygen.startSession.useMutation();
 
   useEffect(() => {
     return () => {
-      endSession();
+      // Cleanup al desmontar
+      if (roomRef.current) {
+        roomRef.current.disconnect();
+      }
     };
   }, []);
 
-  // Exponer métodos para uso externo
   useEffect(() => {
-    if (avatar.current) {
-      (window as any).avatarSpeak = handleSpeak;
-      (window as any).avatarInterrupt = handleInterrupt;
+    if (stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
     }
-  }, [avatar.current]);
+  }, [stream]);
+
+  const handleConnect = async () => {
+    try {
+      setIsLoadingSession(true);
+
+      // 1. Crear nueva sesión
+      const sessionData = await createSessionMutation.mutateAsync({
+        quality: "medium",
+        avatarId: "0f97b240e94a491aa47e27c0a038c7de",
+        voiceId: "5d29644883bf4359b4d561a5db2dd740",
+      });
+
+      if (!sessionData.session_id || !sessionData.url || !sessionData.access_token) {
+        throw new Error("Datos de sesión incompletos");
+      }
+
+      setSessionId(sessionData.session_id);
+
+      // 2. Conectar a LiveKit
+      const room = new Room();
+      roomRef.current = room;
+
+      room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+      room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+      room.on(RoomEvent.Disconnected, handleDisconnect);
+
+      await room.connect(sessionData.url, sessionData.access_token);
+
+      // 3. Iniciar sesión del avatar
+      await startSessionMutation.mutateAsync({
+        sessionId: sessionData.session_id,
+      });
+
+      setIsConnected(true);
+      setIsLoadingSession(false);
+      onReady?.();
+      toast.success("Sesión de avatar iniciada");
+    } catch (error) {
+      console.error("Error al conectar avatar:", error);
+      setIsLoadingSession(false);
+      toast.error("Error al iniciar sesión del avatar. Por favor, intenta de nuevo.");
+    }
+  };
+
+  const handleTrackSubscribed = (
+    track: RemoteTrack,
+    publication: RemoteTrackPublication,
+    participant: RemoteParticipant
+  ) => {
+    if (track.kind === Track.Kind.Video) {
+      const videoStream = new MediaStream([track.mediaStreamTrack]);
+      setStream(videoStream);
+    }
+
+    if (track.kind === Track.Kind.Audio) {
+      const audioElement = track.attach();
+      document.body.appendChild(audioElement);
+    }
+  };
+
+  const handleTrackUnsubscribed = (
+    track: RemoteTrack,
+    publication: RemoteTrackPublication,
+    participant: RemoteParticipant
+  ) => {
+    track.detach().forEach((element) => element.remove());
+  };
+
+  const handleDisconnect = () => {
+    setIsConnected(false);
+    setStream(null);
+  };
+
+  const handleDisconnectManual = () => {
+    if (roomRef.current) {
+      roomRef.current.disconnect();
+    }
+    setIsConnected(false);
+    setStream(null);
+    setSessionId(null);
+    toast.info("Sesión finalizada");
+  };
 
   return (
     <div className="w-full h-full flex flex-col">
       {/* Video del Avatar */}
       <div className="relative flex-1 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-lg overflow-hidden">
-        {stream ? (
+        {isConnected && stream ? (
           <video
-            ref={mediaStream}
+            ref={videoRef}
             autoPlay
             playsInline
-            className={`w-full h-full object-cover ${isVideoOff ? "hidden" : ""}`}
+            className="w-full h-full object-cover"
           >
             <track kind="captions" />
           </video>
@@ -178,28 +149,30 @@ export default function InteractiveAvatar({
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center space-y-4">
               <div className="w-24 h-24 mx-auto rounded-full bg-green-200 dark:bg-green-800 flex items-center justify-center">
-                <Video className="w-12 h-12 text-green-600 dark:text-green-300" />
+                {isLoadingSession ? (
+                  <Loader2 className="w-12 h-12 text-green-600 dark:text-green-300 animate-spin" />
+                ) : (
+                  <Video className="w-12 h-12 text-green-600 dark:text-green-300" />
+                )}
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  Avatar no conectado
+                  {isLoadingSession
+                    ? "Conectando con el asesor virtual..."
+                    : "Avatar no conectado"}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Inicia la sesión para comenzar
+                  {isLoadingSession
+                    ? "Esto puede tardar unos segundos"
+                    : "Inicia la sesión para comenzar"}
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {isVideoOff && stream && (
-          <div className="w-full h-full flex items-center justify-center bg-gray-900">
-            <VideoOff className="w-16 h-16 text-gray-400" />
-          </div>
-        )}
-
         {/* Indicador de carga */}
-        {(isLoadingSession || isLoadingRepeat) && (
+        {isLoadingSession && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <Loader2 className="w-12 h-12 text-white animate-spin" />
           </div>
@@ -208,9 +181,9 @@ export default function InteractiveAvatar({
 
       {/* Controles */}
       <div className="mt-4 flex gap-2 justify-center">
-        {!stream ? (
+        {!isConnected ? (
           <Button
-            onClick={startSession}
+            onClick={handleConnect}
             disabled={isLoadingSession}
             size="lg"
             className="bg-green-600 hover:bg-green-700"
@@ -228,29 +201,10 @@ export default function InteractiveAvatar({
             )}
           </Button>
         ) : (
-          <>
-            <Button
-              onClick={() => setIsMuted(!isMuted)}
-              variant="outline"
-              size="icon"
-            >
-              {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-            </Button>
-            <Button
-              onClick={() => setIsVideoOff(!isVideoOff)}
-              variant="outline"
-              size="icon"
-            >
-              {isVideoOff ? (
-                <VideoOff className="h-4 w-4" />
-              ) : (
-                <Video className="h-4 w-4" />
-              )}
-            </Button>
-            <Button onClick={endSession} variant="destructive">
-              Finalizar Sesión
-            </Button>
-          </>
+          <Button onClick={handleDisconnectManual} variant="destructive" size="lg">
+            <VideoOff className="mr-2 h-4 w-4" />
+            Finalizar Sesión
+          </Button>
         )}
       </div>
     </div>

@@ -133,3 +133,11 @@
 - [x] Actualizar voiceId con la voz clonada personalizada
 - [x] Probar flujo completo de visita técnica
 - [x] Verificar funcionamiento del avatar con voz personalizada
+
+## Corrección de Errores Reportados
+- [x] Investigar y corregir error al ingresar a visita técnica
+- [x] Refactorizar InteractiveAvatar para usar API REST de HeyGen
+- [x] Eliminar SDK deprecado @heygen/streaming-avatar
+- [x] Implementar llamadas directas a la API de HeyGen
+- [ ] Corregir datos en blanco en el dashboard
+- [ ] Verificar conexión con base de datos
