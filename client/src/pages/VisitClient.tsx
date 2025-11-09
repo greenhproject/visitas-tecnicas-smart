@@ -46,6 +46,31 @@ export default function VisitClient() {
 
   const createAnswerMutation = trpc.answers.create.useMutation();
 
+  // Hacer que el avatar lea la pregunta actual cuando cambia
+  useEffect(() => {
+    if (avatarReady && avatarRef.current?.isConnected && questions && questions.length > 0) {
+      const currentQuestion = questions[currentQuestionIndex];
+      if (currentQuestion) {
+        const questionText = currentQuestion.questionText;
+        const questionType = currentQuestion.questionType;
+        
+        let instruction = "";
+        if (questionType === "photo") {
+          instruction = "Por favor, toma una foto clara de esto.";
+        } else if (questionType === "number") {
+          instruction = "Responde con un número.";
+        } else if (questionType === "boolean") {
+          instruction = "Responde sí o no.";
+        } else {
+          instruction = "Puedes escribir tu respuesta o usar el botón de grabar.";
+        }
+
+        const fullMessage = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}: ${questionText}. ${instruction}`;
+        avatarRef.current.speak(fullMessage);
+      }
+    }
+  }, [currentQuestionIndex, avatarReady, questions]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted">
@@ -93,28 +118,6 @@ export default function VisitClient() {
 
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-
-  // Hacer que el avatar lea la pregunta actual cuando cambia
-  useEffect(() => {
-    if (avatarReady && avatarRef.current?.isConnected && currentQuestion) {
-      const questionText = currentQuestion.questionText;
-      const questionType = currentQuestion.questionType;
-      
-      let instruction = "";
-      if (questionType === "photo") {
-        instruction = "Por favor, toma una foto clara de esto.";
-      } else if (questionType === "number") {
-        instruction = "Responde con un número.";
-      } else if (questionType === "boolean") {
-        instruction = "Responde sí o no.";
-      } else {
-        instruction = "Puedes escribir tu respuesta o usar el botón de grabar.";
-      }
-
-      const fullMessage = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}: ${questionText}. ${instruction}`;
-      avatarRef.current.speak(fullMessage);
-    }
-  }, [currentQuestionIndex, avatarReady, currentQuestion, questions]);
 
   const handleAnswerChange = (value: any) => {
     setAnswers({
