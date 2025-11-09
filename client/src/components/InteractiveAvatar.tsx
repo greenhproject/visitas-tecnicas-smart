@@ -75,7 +75,7 @@ export default function InteractiveAvatar({
         quality: AvatarQuality.High,
         avatarName: "0f97b240e94a491aa47e27c0a038c7de", // Avatar personalizado de GreenH Project
         voice: {
-          voiceId: "es-MX-DaliaNeural", // Voz en español
+          voiceId: "5d29644883bf4359b4d561a5db2dd740", // Voz clonada personalizada de GreenH Project
         },
         language: "es",
       });

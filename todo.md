@@ -128,3 +128,8 @@
 
 ## Corrección de Menú
 - [x] Eliminar "Page 2" del menú del sidebar (ruta inexistente)
+
+## Configuración de Voz Personalizada y Pruebas
+- [x] Actualizar voiceId con la voz clonada personalizada
+- [x] Probar flujo completo de visita técnica
+- [x] Verificar funcionamiento del avatar con voz personalizada
