@@ -125,3 +125,6 @@
 
 ## Actualización de Avatar Personalizado
 - [x] Actualizar avatarId en InteractiveAvatar.tsx con el ID del avatar personalizado
+
+## Corrección de Menú
+- [x] Eliminar "Page 2" del menú del sidebar (ruta inexistente)
