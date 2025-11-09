@@ -201,6 +201,105 @@ export const appRouter = router({
         return await updateTechnicalVisit(id, data);
       }),
   }),
+
+  // Reports
+  reports: router({
+    generate: protectedProcedure
+      .input(z.object({ visitId: z.number() }))
+      .mutation(async ({ input }) => {
+        const { generateVisitReport } = await import("./pdfGenerator");
+        const result = await generateVisitReport(input.visitId);
+        return result;
+      }),
+    getByVisit: protectedProcedure
+      .input(z.object({ visitId: z.number() }))
+      .query(async ({ input }) => {
+        const { getReportByVisitId } = await import("./db");
+        return await getReportByVisitId(input.visitId);
+      }),
+    sendReport: protectedProcedure
+      .input(z.object({ visitId: z.number() }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { sendReportToClient, sendReportToEngineer } = await import("./emailService");
+        const { uploadDocumentToOpenSolar } = await import("./openSolarService");
+        const { technicalVisits, reports, users, engineers } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        // Obtener visita
+        const visitData = await db.select().from(technicalVisits).where(eq(technicalVisits.id, input.visitId)).limit(1);
+        if (visitData.length === 0) throw new Error("Visita no encontrada");
+        const visit = visitData[0];
+
+        // Obtener reporte
+        const reportData = await db.select().from(reports).where(eq(reports.visitId, input.visitId)).limit(1);
+        if (reportData.length === 0) throw new Error("Reporte no encontrado");
+        const report = reportData[0];
+
+        // Enviar al cliente
+        if (visit.clientEmail && report.sentToClient === 0) {
+          await sendReportToClient(visit.clientEmail, visit.clientName || "Cliente", report.fileUrl);
+          await db.update(reports).set({ sentToClient: 1 }).where(eq(reports.id, report.id));
+        }
+
+        // Enviar al ingeniero
+        if (visit.engineerId && report.sentToEngineer === 0) {
+          const engineerData = await db.select().from(engineers).where(eq(engineers.id, visit.engineerId)).limit(1);
+          if (engineerData.length > 0) {
+            const engineer = engineerData[0];
+            const userData = await db.select().from(users).where(eq(users.id, engineer.userId)).limit(1);
+            if (userData.length > 0 && userData[0].email) {
+              await sendReportToEngineer(
+                userData[0].email,
+                userData[0].name || "Ingeniero",
+                visit.clientName || "Cliente",
+                report.fileUrl
+              );
+              await db.update(reports).set({ sentToEngineer: 1 }).where(eq(reports.id, report.id));
+            }
+          }
+        }
+
+        // Subir a OpenSolar
+        if (visit.openSolarProjectId && report.uploadedToOpenSolar === 0) {
+          try {
+            await uploadDocumentToOpenSolar(
+              visit.openSolarProjectId,
+              report.fileUrl,
+              `Informe_Visita_Tecnica_${input.visitId}.pdf`
+            );
+            await db.update(reports).set({ uploadedToOpenSolar: 1 }).where(eq(reports.id, report.id));
+          } catch (error) {
+            console.error("Error al subir a OpenSolar:", error);
+            // No lanzar error para que el envío de emails se complete
+          }
+        }
+
+        return { success: true };
+      }),
+  }),
+
+  // HeyGen Integration
+  heygen: router({
+    getAccessToken: publicProcedure.query(async () => {
+      const { getHeyGenAccessToken } = await import("./heygen");
+      const token = await getHeyGenAccessToken();
+      return { token };
+    }),
+    listAvatars: protectedProcedure.query(async () => {
+      const { listHeyGenAvatars } = await import("./heygen");
+      const avatars = await listHeyGenAvatars();
+      return avatars;
+    }),
+    listVoices: protectedProcedure.query(async () => {
+      const { listHeyGenVoices } = await import("./heygen");
+      const voices = await listHeyGenVoices();
+      return voices;
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -11,6 +11,7 @@ import { useRoute } from "wouter";
 import { toast } from "sonner";
 import { Camera, Upload, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
 import { APP_LOGO, APP_TITLE } from "@/const";
+import InteractiveAvatar from "@/components/InteractiveAvatar";
 
 export default function VisitClient() {
   const [, params] = useRoute("/visit/:token");
@@ -21,6 +22,12 @@ export default function VisitClient() {
   const [photos, setPhotos] = useState<Record<number, File[]>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [showAvatar, setShowAvatar] = useState(true); // Mostrar avatar por defecto
+
+  // Obtener token de HeyGen
+  const { data: heygenData } = trpc.heygen.getAccessToken.useQuery(undefined, {
+    enabled: showAvatar,
+  });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -245,6 +252,40 @@ export default function VisitClient() {
           </div>
         </div>
       </header>
+
+      {/* Avatar Section */}
+      {showAvatar && heygenData?.token && (
+        <div className="container py-6">
+          <div className="max-w-2xl mx-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tu Asesor Virtual</CardTitle>
+                <CardDescription>
+                  Nuestro asesor virtual te guiará a través de la visita técnica
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-video w-full">
+                  <InteractiveAvatar
+                    apiKey={heygenData.token}
+                    onReady={() => {
+                      // Saludo inicial
+                      setTimeout(() => {
+                        if ((window as any).avatarSpeak) {
+                          const greeting = `Hola ${visit?.clientName || ""}, bienvenido a tu visita técnica virtual con GreenH Project. Voy a guiarte a través de ${questions.length} preguntas sobre tu instalación solar. ¿Estás listo para comenzar?`;
+                          (window as any).avatarSpeak(greeting);
+                        }
+                      }, 1000);
+                    }}
+                    onSpeakingStart={() => console.log("Avatar empezó a hablar")}
+                    onSpeakingEnd={() => console.log("Avatar terminó de hablar")}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
       {/* Progress */}
       <div className="container py-6">

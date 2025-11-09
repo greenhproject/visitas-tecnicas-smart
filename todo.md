@@ -29,32 +29,32 @@
 - [x] Mostrar progreso de la visita al cliente
 
 ## Fase 4: Integración con HeyGen Avatar IA
-- [ ] Investigar y configurar HeyGen API
-- [ ] Solicitar API key de HeyGen mediante webdev_request_secrets
-- [ ] Crear interfaz de videollamada personalizada con WebRTC
-- [ ] Integrar avatar de HeyGen en el stream de video
-- [ ] Implementar conversación interactiva con preguntas del cuestionario
+- [x] Investigar y configurar HeyGen API
+- [x] Solicitar API key de HeyGen mediante webdev_request_secrets
+- [x] Crear interfaz de videollamada personalizada con WebRTC
+- [x] Integrar avatar de HeyGen en el stream de video
+- [x] Implementar conversación interactiva con preguntas del cuestionario
 - [ ] Configurar reconocimiento de voz para respuestas del cliente
 - [ ] Personalizar avatar y voz según marca GreenH Project
 
 ## Fase 5: Generación de Informes PDF
-- [ ] Instalar librería de generación de PDF (ReportLab o similar)
-- [ ] Diseñar plantilla de informe profesional
-- [ ] Incluir logo y branding de GreenH Project
-- [ ] Generar secciones con respuestas del cliente
-- [ ] Incluir fotos capturadas en el informe
+- [x] Instalar librería de generación de PDF (PDFKit)
+- [x] Diseñar plantilla de informe profesional
+- [x] Incluir logo y branding de GreenH Project
+- [x] Generar secciones con respuestas del cliente
+- [x] Incluir fotos capturadas en el informe
 - [ ] Agregar análisis de viabilidad basado en respuestas
-- [ ] Guardar PDF generado en S3
+- [x] Guardar PDF generado en S3
 
 ## Fase 6: Envío de Emails e Integración OpenSolar
-- [ ] Configurar Gmail API con admin@greenhproject.com
-- [ ] Solicitar credenciales de Gmail mediante webdev_request_secrets
-- [ ] Diseñar plantilla de email profesional y estética
-- [ ] Implementar envío de informe PDF al cliente
-- [ ] Implementar envío de informe PDF al ingeniero a cargo
-- [ ] Investigar endpoint de OpenSolar para subir documentos
-- [ ] Implementar integración con OpenSolar API
-- [ ] Subir informe PDF a proyecto específico en OpenSolar
+- [x] Configurar Gmail API con admin@greenhproject.com
+- [x] Utilizar MCP de Gmail para envío de emails
+- [x] Diseñar plantilla de email profesional y estética
+- [x] Implementar envío de informe PDF al cliente
+- [x] Implementar envío de informe PDF al ingeniero a cargo
+- [x] Investigar endpoint de OpenSolar para subir documentos
+- [x] Implementar integración con OpenSolar API
+- [x] Subir informe PDF a proyecto específico en OpenSolar
 
 ## Fase 7: Pruebas y Ajustes
 - [ ] Probar flujo completo de visita técnica
