@@ -122,3 +122,6 @@
 - [x] Actualizar título en const.ts
 - [x] Actualizar título en package.json
 - [x] Actualizar referencias en documentación
+
+## Actualización de Avatar Personalizado
+- [x] Actualizar avatarId en InteractiveAvatar.tsx con el ID del avatar personalizado

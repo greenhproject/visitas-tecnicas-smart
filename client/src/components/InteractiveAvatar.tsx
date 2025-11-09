@@ -73,7 +73,7 @@ export default function InteractiveAvatar({
     try {
       const res = await avatar.current.createStartAvatar({
         quality: AvatarQuality.High,
-        avatarName: "Wayne_20240711", // Avatar por defecto
+        avatarName: "0f97b240e94a491aa47e27c0a038c7de", // Avatar personalizado de GreenH Project
         voice: {
           voiceId: "es-MX-DaliaNeural", // Voz en español
         },
