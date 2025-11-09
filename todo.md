@@ -1,4 +1,4 @@
-# TODO - Clínica Digital Solar
+# TODO - Visitas Técnicas Smart
 
 ## Fase 1: Base de Datos y Modelos
 - [x] Diseñar esquema de base de datos completo
@@ -110,3 +110,15 @@
 - [x] Integrar logo del koala como elemento visual complementario
 - [x] Actualizar generador de PDF para usar el logo oficial
 - [x] Verificar que los logos se vean correctamente en todos los tamaños
+
+## Mejoras Finales
+- [x] Actualizar información de contacto real en generador de PDF
+- [x] Crear script de seed para cuestionario de prueba
+- [x] Agregar preguntas típicas de visita técnica solar
+- [x] Documentar instrucciones para actualizar favicon
+
+## Cambio de Nombre
+- [x] Actualizar nombre de la aplicación a "Visitas Técnicas Smart"
+- [x] Actualizar título en const.ts
+- [x] Actualizar título en package.json
+- [x] Actualizar referencias en documentación

@@ -1,6 +1,6 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
-export const APP_TITLE = import.meta.env.VITE_APP_TITLE || "Clínica Digital Solar";
+export const APP_TITLE = import.meta.env.VITE_APP_TITLE || "Visitas Técnicas Smart";
 
 export const APP_LOGO = "/greenhproject-logo.png";
 export const KOALA_LOGO = "/koala-logo.png";

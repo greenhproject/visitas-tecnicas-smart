@@ -197,9 +197,8 @@ async function createPDF(data: ReportData): Promise<Buffer> {
 
       // Información de contacto
       doc.fontSize(9).fillColor("#666666");
-      doc.text("Calle 123 #45-67, Bogotá, Colombia", { align: "center" });
-      doc.text("Tel: +57 300 123 4567 | Email: info@greenhproject.com", { align: "center" });
-      doc.text("NIT: 900.123.456-7", { align: "center" });
+      doc.text("Cra 1 Este # 2-26 local 2, Mosquera, Colombia", { align: "center" });
+      doc.text("Cel: (57) 321 456 76 44 | Email: info@greenhproject.com", { align: "center" });
       doc.moveDown(1.5);
 
       // Línea divisoria

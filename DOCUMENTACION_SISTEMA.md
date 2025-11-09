@@ -1,4 +1,4 @@
-# Documentación del Sistema - Clínica Digital Solar
+# Documentación del Sistema - Visitas Técnicas Smart
 
 **Versión:** 2.0  
 **Fecha:** Noviembre 2024  
@@ -8,7 +8,7 @@
 
 ## Descripción General
 
-La Clínica Digital Solar es una plataforma completa de automatización para visitas técnicas virtuales en instalaciones de sistemas solares. El sistema utiliza inteligencia artificial conversacional mediante avatares digitales de HeyGen para simular videollamadas reales con asesores, permitiendo recopilar información técnica, capturar fotografías y generar informes profesionales automáticamente.
+Visitas Técnicas Smart es una plataforma completa de automatización para visitas técnicas virtuales en instalaciones de sistemas solares. El sistema utiliza inteligencia artificial conversacional mediante avatares digitales de HeyGen para simular videollamadas reales con asesores, permitiendo recopilar información técnica, capturar fotografías y generar informes profesionales automáticamente.
 
 ---
 
