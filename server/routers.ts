@@ -200,10 +200,65 @@ export const appRouter = router({
         const { updateTechnicalVisit } = await import("./db");
         return await updateTechnicalVisit(id, data);
       }),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const { getDb } = await import("./db");
+        const { technicalVisits } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        await db.delete(technicalVisits).where(eq(technicalVisits.id, input.id));
+        return { success: true };
+      }),
   }),
 
   // Reports
   reports: router({
+    list: protectedProcedure.query(async () => {
+      const { getDb } = await import("./db");
+      const { reports, technicalVisits, questionnaires } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+
+      const db = await getDb();
+      if (!db) return [];
+
+      const allReports = await db
+        .select({
+          id: reports.id,
+          visitId: reports.visitId,
+          reportUrl: reports.fileUrl,
+          createdAt: reports.createdAt,
+          clientName: technicalVisits.clientName,
+          visitStatus: technicalVisits.status,
+          questionnaireId: technicalVisits.questionnaireId,
+        })
+        .from(reports)
+        .leftJoin(technicalVisits, eq(reports.visitId, technicalVisits.id))
+        .orderBy(reports.createdAt);
+
+      // Obtener nombres de cuestionarios
+      const reportsWithQuestionnaire = await Promise.all(
+        allReports.map(async (report) => {
+          if (!report.questionnaireId) {
+            return { ...report, questionnaireName: null };
+          }
+          const questionnaire = await db
+            .select({ title: questionnaires.title })
+            .from(questionnaires)
+            .where(eq(questionnaires.id, report.questionnaireId))
+            .limit(1);
+          return {
+            ...report,
+            questionnaireName: questionnaire[0]?.title || null,
+          };
+        })
+      );
+
+      return reportsWithQuestionnaire;
+    }),
     generate: protectedProcedure
       .input(z.object({ visitId: z.number() }))
       .mutation(async ({ input }) => {

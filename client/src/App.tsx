@@ -11,6 +11,7 @@ import QuestionnaireForm from "./pages/QuestionnaireForm";
 import Visits from "./pages/Visits";
 import NewVisit from "./pages/NewVisit";
 import VisitClient from "./pages/VisitClient";
+import Reports from "./pages/Reports";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -23,6 +24,7 @@ function Router() {
       <Route path={"/visits"} component={Visits} />
       <Route path={"/visits/new"} component={NewVisit} />
       <Route path={"/visit/:token"} component={VisitClient} />
+      <Route path={"/reports"} component={Reports} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

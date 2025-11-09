@@ -11,17 +11,33 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Plus, Eye, Link as LinkIcon, Copy } from "lucide-react";
+import { Plus, Eye, Link as LinkIcon, Copy, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 
 export default function Visits() {
+  const utils = trpc.useUtils();
   const { data: visits, isLoading } = trpc.visits.list.useQuery();
+  const deleteVisit = trpc.visits.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Visita eliminada exitosamente");
+      utils.visits.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error(`Error al eliminar visita: ${error.message}`);
+    },
+  });
 
   const copyLink = (token: string) => {
     const url = `${window.location.origin}/visit/${token}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copiado al portapapeles");
+  };
+
+  const handleDelete = (visitId: number, clientName: string) => {
+    if (window.confirm(`¿Estás seguro de eliminar la visita de ${clientName}?`)) {
+      deleteVisit.mutate({ id: visitId });
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -123,14 +139,24 @@ export default function Visits() {
                           variant="ghost"
                           size="sm"
                           onClick={() => copyLink(visit.uniqueToken)}
+                          title="Copiar link"
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
                         <Link href={`/visits/${visit.id}`}>
-                          <Button variant="ghost" size="sm">
+                          <Button variant="ghost" size="sm" title="Ver detalles">
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(visit.id, visit.clientName || "este cliente")}
+                          className="text-destructive hover:text-destructive"
+                          title="Eliminar visita"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
