@@ -177,17 +177,30 @@ async function createPDF(data: ReportData): Promise<Buffer> {
         resolve(pdfBuffer);
       });
 
-      // Encabezado con branding de GreenH Project
-      doc.fontSize(24).fillColor("#6FB327").text("GreenH Project", { align: "center" });
-      doc.fontSize(12).fillColor("#000000").text("Informe de Visita Técnica Virtual", { align: "center" });
-      doc.moveDown();
+      // Encabezado con logo de GreenH Project
+      const logoPath = "./server/assets/greenhproject-logo.png";
+      try {
+        doc.image(logoPath, {
+          fit: [200, 60],
+          align: "center",
+        });
+        doc.moveDown(0.5);
+      } catch (error) {
+        // Si falla la carga del logo, mostrar texto
+        doc.fontSize(24).fillColor("#6FB327").text("GreenH Project", { align: "center" });
+        doc.moveDown(0.5);
+      }
+
+      doc.fontSize(14).fillColor("#000000").text("Informe de Visita Técnica Virtual", { align: "center" });
+      doc.fontSize(10).fillColor("#666666").text("Revoluciona el concepto de vivir", { align: "center" });
+      doc.moveDown(1);
 
       // Información de contacto
-      doc.fontSize(10).fillColor("#666666");
+      doc.fontSize(9).fillColor("#666666");
       doc.text("Calle 123 #45-67, Bogotá, Colombia", { align: "center" });
       doc.text("Tel: +57 300 123 4567 | Email: info@greenhproject.com", { align: "center" });
       doc.text("NIT: 900.123.456-7", { align: "center" });
-      doc.moveDown(2);
+      doc.moveDown(1.5);
 
       // Línea divisoria
       doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke("#6FB327");

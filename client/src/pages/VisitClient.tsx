@@ -10,7 +10,7 @@ import { useState, useRef } from "react";
 import { useRoute } from "wouter";
 import { toast } from "sonner";
 import { Camera, Upload, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
-import { APP_LOGO, APP_TITLE } from "@/const";
+import { APP_LOGO, APP_TITLE, KOALA_LOGO } from "@/const";
 import InteractiveAvatar from "@/components/InteractiveAvatar";
 import VoiceRecorder from "@/components/VoiceRecorder";
 
@@ -242,11 +242,13 @@ export default function VisitClient() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={APP_LOGO} alt="Logo" className="h-10" />
-            <span className="font-bold text-xl">{APP_TITLE}</span>
+      <header className="border-b bg-white shadow-sm">
+        <div className="container flex h-20 items-center justify-between">
+          <div className="flex items-center gap-4">
+            <img src={APP_LOGO} alt="GreenH Project" className="h-12" />
+          </div>
+          <div className="flex items-center gap-2">
+            <img src={KOALA_LOGO} alt="Koala" className="h-8 opacity-70" />
           </div>
           <div className="text-sm text-muted-foreground">
             Visita Técnica Virtual

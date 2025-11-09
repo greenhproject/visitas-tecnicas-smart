@@ -2,7 +2,8 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
 export const APP_TITLE = import.meta.env.VITE_APP_TITLE || "Clínica Digital Solar";
 
-export const APP_LOGO = "https://static.wixstatic.com/media/e6e1c7_4aca836292b248e536b3f568854288~mv2.png";
+export const APP_LOGO = "/greenhproject-logo.png";
+export const KOALA_LOGO = "/koala-logo.png";
 
 // Generate login URL at runtime so redirect URI reflects the current origin.
 export const getLoginUrl = () => {

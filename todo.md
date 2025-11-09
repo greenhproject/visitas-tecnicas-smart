@@ -101,3 +101,12 @@
 - [x] Investigar cómo crear avatar personalizado en HeyGen
 - [x] Configurar voz clonada en español
 - [x] Documentar proceso de personalización para el cliente
+
+## Integración de Logos Oficiales
+- [x] Copiar logos a la carpeta public del proyecto
+- [x] Actualizar APP_LOGO en const.ts con el logo principal
+- [x] Integrar logo principal en el encabezado del dashboard
+- [x] Integrar logo principal en la página de visitas para clientes
+- [x] Integrar logo del koala como elemento visual complementario
+- [x] Actualizar generador de PDF para usar el logo oficial
+- [x] Verificar que los logos se vean correctamente en todos los tamaños
