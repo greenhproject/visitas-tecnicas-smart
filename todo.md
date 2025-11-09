@@ -176,3 +176,7 @@
 
 ## Problema de Publicación (2025-11-09)
 - [ ] Resolver error "[internal] failed to get checkpoint: record not found" que impide publicar
+
+## Problemas en Página de Visitas (2025-11-09)
+- [x] Implementar funcionalidad de eliminación de visitas (botón ya funciona, backend implementado)
+- [x] Corregir visualización del nombre del cuestionario (agregado JOIN con tabla questionnaires)

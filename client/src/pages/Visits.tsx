@@ -35,7 +35,9 @@ export default function Visits() {
   };
 
   const handleDelete = (visitId: number, clientName: string) => {
-    if (window.confirm(`¿Estás seguro de eliminar la visita de ${clientName}?`)) {
+    // Confirmar eliminación directamente con toast
+    const confirmed = confirm(`¿Estás seguro de eliminar la visita de ${clientName}?`);
+    if (confirmed) {
       deleteVisit.mutate({ id: visitId });
     }
   };
@@ -109,6 +111,7 @@ export default function Visits() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Cliente</TableHead>
+                    <TableHead>Cuestionario</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Dirección</TableHead>
                     <TableHead>Estado</TableHead>
@@ -121,6 +124,9 @@ export default function Visits() {
                     <TableRow key={visit.id}>
                       <TableCell className="font-medium">
                         {visit.clientName || "-"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {visit.questionnaireName || "N/A"}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {visit.clientEmail || "-"}

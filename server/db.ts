@@ -203,7 +203,29 @@ export async function getTechnicalVisitByToken(token: string) {
 export async function getTechnicalVisits() {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(technicalVisits).orderBy(technicalVisits.createdAt);
+  
+  const result = await db
+    .select({
+      id: technicalVisits.id,
+      questionnaireId: technicalVisits.questionnaireId,
+      questionnaireName: questionnaires.title,
+      engineerId: technicalVisits.engineerId,
+      clientName: technicalVisits.clientName,
+      clientEmail: technicalVisits.clientEmail,
+      clientPhone: technicalVisits.clientPhone,
+      address: technicalVisits.address,
+      status: technicalVisits.status,
+      uniqueToken: technicalVisits.uniqueToken,
+      openSolarProjectId: technicalVisits.openSolarProjectId,
+      createdAt: technicalVisits.createdAt,
+      startedAt: technicalVisits.startedAt,
+      completedAt: technicalVisits.completedAt,
+    })
+    .from(technicalVisits)
+    .leftJoin(questionnaires, eq(technicalVisits.questionnaireId, questionnaires.id))
+    .orderBy(technicalVisits.createdAt);
+  
+  return result;
 }
 
 export async function updateTechnicalVisit(id: number, data: Partial<InsertTechnicalVisit>) {
