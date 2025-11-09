@@ -213,3 +213,44 @@ export async function listHeyGenVoices() {
     throw error;
   }
 }
+
+/**
+ * Hace que el avatar hable un texto específico
+ */
+export async function speakHeyGen(sessionId: string, text: string): Promise<{ status: string }> {
+  const apiKey = process.env.HEYGEN_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error("HEYGEN_API_KEY no está configurada");
+  }
+
+  try {
+    const response = await fetch(
+      "https://api.heygen.com/v1/streaming.task",
+      {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          text,
+          task_type: "talk",
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error al hacer hablar al avatar:", errorData);
+      throw new Error(`Error al hacer hablar al avatar: ${JSON.stringify(errorData)}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error en speakHeyGen:", error);
+    throw error;
+  }
+}

@@ -6,12 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/lib/trpc";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRoute } from "wouter";
 import { toast } from "sonner";
 import { Camera, Upload, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
 import { APP_LOGO, APP_TITLE, KOALA_LOGO } from "@/const";
-import InteractiveAvatar from "@/components/InteractiveAvatar";
+import InteractiveAvatar, { InteractiveAvatarRef } from "@/components/InteractiveAvatar";
 import VoiceRecorder from "@/components/VoiceRecorder";
 
 export default function VisitClient() {
@@ -34,6 +34,8 @@ export default function VisitClient() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const avatarRef = useRef<InteractiveAvatarRef>(null);
+  const [avatarReady, setAvatarReady] = useState(false);
 
   const { data: visit, isLoading } = trpc.visits.getByToken.useQuery({ token });
   const { data: questions } = trpc.questions.listByQuestionnaire.useQuery(
@@ -90,6 +92,28 @@ export default function VisitClient() {
 
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+
+  // Hacer que el avatar lea la pregunta actual cuando cambia
+  useEffect(() => {
+    if (avatarReady && avatarRef.current?.isConnected && currentQuestion) {
+      const questionText = currentQuestion.questionText;
+      const questionType = currentQuestion.questionType;
+      
+      let instruction = "";
+      if (questionType === "photo") {
+        instruction = "Por favor, toma una foto clara de esto.";
+      } else if (questionType === "number") {
+        instruction = "Responde con un número.";
+      } else if (questionType === "boolean") {
+        instruction = "Responde sí o no.";
+      } else {
+        instruction = "Puedes escribir tu respuesta o usar el botón de grabar.";
+      }
+
+      const fullMessage = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}: ${questionText}. ${instruction}`;
+      avatarRef.current.speak(fullMessage);
+    }
+  }, [currentQuestionIndex, avatarReady, currentQuestion, questions]);
 
   const handleAnswerChange = (value: any) => {
     setAnswers({
@@ -270,15 +294,17 @@ export default function VisitClient() {
               <CardContent>
                 <div className="aspect-video w-full">
                   <InteractiveAvatar
-                    apiKey={heygenData.token}
+                    ref={avatarRef}
+                    autoConnect={true}
                     onReady={() => {
+                      setAvatarReady(true);
                       // Saludo inicial
                       setTimeout(() => {
-                        if ((window as any).avatarSpeak) {
-                          const greeting = `Hola ${visit?.clientName || ""}, bienvenido a tu visita técnica virtual con GreenH Project. Voy a guiarte a través de ${questions.length} preguntas sobre tu instalación solar. ¿Estás listo para comenzar?`;
-                          (window as any).avatarSpeak(greeting);
+                        if (avatarRef.current?.isConnected) {
+                          const greeting = `Hola ${visit?.clientName || ""}, bienvenido a tu visita técnica virtual con Green House Project. Soy tu asesor virtual y voy a guiarte a través de ${questions.length} preguntas sobre tu instalación solar. ¿Estás listo para comenzar?`;
+                          avatarRef.current.speak(greeting);
                         }
-                      }, 1000);
+                      }, 2000);
                     }}
                     onSpeakingStart={() => console.log("Avatar empezó a hablar")}
                     onSpeakingEnd={() => console.log("Avatar terminó de hablar")}

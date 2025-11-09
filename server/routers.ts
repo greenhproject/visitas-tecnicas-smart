@@ -376,6 +376,17 @@ export const appRouter = router({
       const voices = await listHeyGenVoices();
       return voices;
     }),
+    speak: publicProcedure
+      .input(
+        z.object({
+          sessionId: z.string(),
+          text: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { speakHeyGen } = await import("./heygen");
+        return await speakHeyGen(input.sessionId, input.text);
+      }),
   }),
 });
 

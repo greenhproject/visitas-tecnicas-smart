@@ -155,3 +155,13 @@
 - [ ] No se puede eliminar visitas desde el panel admin
 - [ ] Cuestionario muestra "N/A" en reportes en lugar del nombre del cuestionario
 - [ ] Responsive de VisitClient necesita mejoras (avatar y secciones no se ven bien en móvil)
+
+## Avatar Interactivo Completo (Reemplazo de Técnico en Videollamada)
+- [x] Actualizar avatar a Pedro_ProfessionalLook_public (ID válido)
+- [x] Configurar auto-conexión del avatar al cargar la página
+- [x] Implementar saludo y presentación del avatar como técnico de Green House Project
+- [x] Hacer que el avatar lea cada pregunta en voz alta automáticamente
+- [ ] Implementar reconocimiento de voz para que el avatar escuche respuestas del usuario
+- [ ] Agregar confirmaciones y feedback del avatar cuando el usuario responde
+- [ ] Implementar guía del avatar para captura de fotos
+- [ ] Agregar despedida del avatar al finalizar el cuestionario
