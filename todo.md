@@ -173,3 +173,6 @@
 ## Problemas con Captura de Fotos (2025-11-09)
 - [x] Corregir: Botón "Tomar Foto" no abre la cámara en móvil (implementado input con capture="environment")
 - [x] Corregir: Después de cargar una foto, el botón "Siguiente" no funciona (corregida validación canProceed)
+
+## Problema de Publicación (2025-11-09)
+- [ ] Resolver error "[internal] failed to get checkpoint: record not found" que impide publicar
