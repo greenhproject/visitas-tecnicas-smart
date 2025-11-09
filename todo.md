@@ -169,3 +169,7 @@
 ## Problemas Críticos Reportados (2025-11-09)
 - [x] Corregir: Avatar no aparece en la página de visita técnica (actualizado a Wayne_20240711)
 - [x] Corregir: Cámara no se abre en dispositivos móviles al hacer clic en "Tomar Foto" (implementado input con capture="environment")
+
+## Problemas con Captura de Fotos (2025-11-09)
+- [x] Corregir: Botón "Tomar Foto" no abre la cámara en móvil (implementado input con capture="environment")
+- [x] Corregir: Después de cargar una foto, el botón "Siguiente" no funciona (corregida validación canProceed)

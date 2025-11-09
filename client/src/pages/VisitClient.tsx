@@ -186,6 +186,12 @@ export default function VisitClient() {
 
   const canProceed = () => {
     if (currentQuestion.isRequired === 1) {
+      // Para preguntas de tipo "photo", solo verificar que haya fotos
+      if (currentQuestion.questionType === "photo") {
+        return (photos[currentQuestion.id]?.length || 0) > 0;
+      }
+      
+      // Para otros tipos, verificar respuesta y foto si es necesario
       const hasAnswer = answers[currentQuestion.id] !== undefined && answers[currentQuestion.id] !== "";
       const hasPhoto = currentQuestion.requiresPhoto === 1 
         ? (photos[currentQuestion.id]?.length || 0) > 0 
