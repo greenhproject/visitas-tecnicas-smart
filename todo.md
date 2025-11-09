@@ -141,3 +141,17 @@
 - [x] Implementar llamadas directas a la API de HeyGen
 - [ ] Corregir datos en blanco en el dashboard
 - [ ] Verificar conexión con base de datos
+
+## Corrección de Avatar Inválido de HeyGen
+- [ ] Investigar diferencia entre avatares de video y avatares interactivos
+- [ ] Listar avatares disponibles para Streaming Avatar
+- [ ] Identificar el avatar ID correcto para Interactive Avatar
+- [ ] Actualizar InteractiveAvatar.tsx con el avatar ID correcto
+- [ ] Probar conexión del avatar sin errores
+
+## Bugs Críticos Reportados
+- [ ] Link de visita muestra "Visita no encontrada" - el uniqueToken no está funcionando
+- [ ] Avatar no carga/aparece en la página de visita técnica
+- [ ] No se puede eliminar visitas desde el panel admin
+- [ ] Cuestionario muestra "N/A" en reportes en lugar del nombre del cuestionario
+- [ ] Responsive de VisitClient necesita mejoras (avatar y secciones no se ven bien en móvil)
