@@ -3,6 +3,7 @@ import { storagePut } from "./storage";
 import { getDb } from "./db";
 import { technicalVisits, answers, photos, questions, questionnaires } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
+import fetch from "node-fetch";
 
 interface ReportData {
   visit: any;
@@ -60,22 +61,109 @@ export async function generateVisitReport(visitId: number): Promise<{ url: strin
   const fileName = `reports/visit-${visitId}-${Date.now()}.pdf`;
   const result = await storagePut(fileName, pdfBuffer, "application/pdf");
 
+  // Calcular score de viabilidad
+  const viabilityScore = calculateViabilityScore(reportData);
+  const viabilityNotes = generateViabilityNotes(reportData, viabilityScore);
+
   // Guardar registro en base de datos
   const { reports } = await import("../drizzle/schema");
   await db.insert(reports).values({
     visitId,
     fileUrl: result.url,
     fileKey: result.key,
+    viabilityScore,
+    viabilityNotes,
   });
 
   return result;
 }
 
 /**
+ * Calcula un score de viabilidad basado en las respuestas
+ */
+function calculateViabilityScore(data: ReportData): number {
+  let score = 100;
+  let totalQuestions = data.questions.length;
+  let answeredQuestions = data.answers.length;
+
+  // Penalizar por preguntas sin responder
+  if (answeredQuestions < totalQuestions) {
+    score -= ((totalQuestions - answeredQuestions) / totalQuestions) * 20;
+  }
+
+  // Penalizar si faltan fotos requeridas
+  const requiredPhotos = data.questions.filter((q) => q.requiresPhoto === 1).length;
+  const uploadedPhotos = data.photos.length;
+  if (uploadedPhotos < requiredPhotos) {
+    score -= ((requiredPhotos - uploadedPhotos) / requiredPhotos) * 30;
+  }
+
+  // Bonus por completitud
+  if (answeredQuestions === totalQuestions && uploadedPhotos >= requiredPhotos) {
+    score += 10;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+/**
+ * Genera notas de viabilidad basadas en el análisis
+ */
+function generateViabilityNotes(data: ReportData, score: number): string {
+  const notes: string[] = [];
+
+  if (score >= 90) {
+    notes.push("✅ Proyecto altamente viable. Toda la información necesaria está completa.");
+  } else if (score >= 70) {
+    notes.push("⚠️ Proyecto viable con observaciones menores.");
+  } else if (score >= 50) {
+    notes.push("⚠️ Proyecto requiere información adicional para evaluación completa.");
+  } else {
+    notes.push("❌ Proyecto requiere visita técnica presencial o información complementaria.");
+  }
+
+  const totalQuestions = data.questions.length;
+  const answeredQuestions = data.answers.length;
+  if (answeredQuestions < totalQuestions) {
+    notes.push(`- Faltan ${totalQuestions - answeredQuestions} preguntas por responder.`);
+  }
+
+  const requiredPhotos = data.questions.filter((q) => q.requiresPhoto === 1).length;
+  const uploadedPhotos = data.photos.length;
+  if (uploadedPhotos < requiredPhotos) {
+    notes.push(`- Faltan ${requiredPhotos - uploadedPhotos} fotografías requeridas.`);
+  }
+
+  if (uploadedPhotos > 0) {
+    notes.push(`- Se capturaron ${uploadedPhotos} fotografías durante la visita.`);
+  }
+
+  return notes.join("\n");
+}
+
+/**
+ * Descarga una imagen desde una URL
+ */
+async function downloadImage(url: string): Promise<Buffer | null> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`Error al descargar imagen: ${url}`);
+      return null;
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } catch (error) {
+    console.error(`Error al descargar imagen ${url}:`, error);
+    return null;
+  }
+}
+
+/**
  * Crea el PDF con el diseño profesional de GreenH Project
  */
 async function createPDF(data: ReportData): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       const doc = new PDFDocument({
         size: "A4",
@@ -145,6 +233,22 @@ async function createPDF(data: ReportData): Promise<Buffer> {
 
       doc.moveDown(2);
 
+      // Análisis de Viabilidad
+      const viabilityScore = calculateViabilityScore(data);
+      const viabilityNotes = generateViabilityNotes(data, viabilityScore);
+
+      doc.fontSize(14).fillColor("#6FB327").text("Análisis de Viabilidad", { underline: true });
+      doc.moveDown(0.5);
+
+      // Score de viabilidad con color
+      const scoreColor = viabilityScore >= 90 ? "#00AA00" : viabilityScore >= 70 ? "#FFA500" : "#FF0000";
+      doc.fontSize(12).font("Helvetica-Bold").fillColor(scoreColor).text(`Score: ${viabilityScore}/100`);
+      doc.font("Helvetica");
+      doc.moveDown(0.5);
+
+      doc.fontSize(10).fillColor("#333333").text(viabilityNotes);
+      doc.moveDown(2);
+
       // Línea divisoria
       doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke("#6FB327");
       doc.moveDown();
@@ -153,7 +257,9 @@ async function createPDF(data: ReportData): Promise<Buffer> {
       doc.fontSize(16).fillColor("#6FB327").text("Cuestionario", { underline: true });
       doc.moveDown(1);
 
-      data.questions.forEach((question, index) => {
+      for (let index = 0; index < data.questions.length; index++) {
+        const question = data.questions[index];
+
         // Pregunta
         doc.fontSize(12).fillColor("#6FB327").text(`${index + 1}. ${question.questionText}`, { underline: false });
         doc.moveDown(0.5);
@@ -171,13 +277,40 @@ async function createPDF(data: ReportData): Promise<Buffer> {
         doc.fontSize(10).fillColor("#333333").text(`Respuesta: ${answerText}`);
         doc.moveDown(0.5);
 
-        // Fotos asociadas a esta pregunta
+        // Fotos asociadas a esta pregunta (embebidas)
         const questionPhotos = data.photos.filter((p) => p.questionId === question.id);
         if (questionPhotos.length > 0) {
-          doc.fontSize(10).fillColor("#666666").text(`Fotos adjuntas: ${questionPhotos.length}`);
-          questionPhotos.forEach((photo, photoIndex) => {
-            doc.fontSize(9).fillColor("#999999").text(`  - Foto ${photoIndex + 1}: ${photo.fileUrl}`);
-          });
+          doc.fontSize(10).fillColor("#666666").text(`Fotografías (${questionPhotos.length}):`, { underline: true });
+          doc.moveDown(0.5);
+
+          for (const photo of questionPhotos) {
+            try {
+              const imageBuffer = await downloadImage(photo.fileUrl);
+              if (imageBuffer) {
+                // Verificar si hay espacio suficiente en la página
+                if (doc.y > 600) {
+                  doc.addPage();
+                }
+
+                // Agregar imagen al PDF (máximo 400px de ancho)
+                doc.image(imageBuffer, {
+                  fit: [400, 300],
+                  align: "center",
+                });
+                doc.moveDown(0.5);
+
+                // Caption de la foto
+                doc.fontSize(8).fillColor("#999999").text(`Capturada: ${new Date(photo.createdAt).toLocaleString("es-CO")}`, {
+                  align: "center",
+                });
+                doc.moveDown(1);
+              }
+            } catch (error) {
+              console.error("Error al embeber imagen:", error);
+              // Si falla, mostrar solo la URL
+              doc.fontSize(9).fillColor("#999999").text(`  - ${photo.fileUrl}`);
+            }
+          }
         }
 
         doc.moveDown(1.5);
@@ -186,23 +319,20 @@ async function createPDF(data: ReportData): Promise<Buffer> {
         if (doc.y > 700) {
           doc.addPage();
         }
-      });
-
-      // Galería de fotos al final
-      if (data.photos.length > 0) {
-        doc.addPage();
-        doc.fontSize(16).fillColor("#6FB327").text("Galería de Fotos", { underline: true });
-        doc.moveDown(1);
-
-        doc.fontSize(10).fillColor("#666666").text(`Total de fotos capturadas: ${data.photos.length}`);
-        doc.moveDown(1);
-
-        data.photos.forEach((photo, index) => {
-          doc.fontSize(9).fillColor("#333333");
-          doc.text(`${index + 1}. ${photo.fileUrl}`);
-          doc.moveDown(0.3);
-        });
       }
+
+      // Firma digital (espacio reservado)
+      doc.addPage();
+      doc.fontSize(14).fillColor("#6FB327").text("Firma Digital", { underline: true });
+      doc.moveDown(1);
+
+      doc.fontSize(10).fillColor("#333333").text("Técnico/Ingeniero responsable:");
+      doc.moveDown(2);
+
+      // Línea para firma
+      doc.moveTo(100, doc.y).lineTo(400, doc.y).stroke("#000000");
+      doc.moveDown(0.5);
+      doc.fontSize(9).fillColor("#666666").text("Firma y fecha", { align: "center" });
 
       // Pie de página
       doc.fontSize(8).fillColor("#999999");

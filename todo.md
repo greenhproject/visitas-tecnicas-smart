@@ -82,3 +82,22 @@
 - [ ] Agregar sección de observaciones finales
 - [ ] Implementar tipos de pregunta: solo foto, solo texto, foto+texto, numérica, selección múltiple
 - [ ] Permitir configurar opciones predefinidas para preguntas de selección
+
+## Mejoras Adicionales
+
+### Mejora de Informes PDF
+- [x] Descargar y embeber imágenes directamente en el PDF
+- [x] Agregar análisis de viabilidad automático basado en respuestas
+- [x] Implementar firma digital del técnico/ingeniero
+- [x] Mejorar diseño visual del PDF con imágenes en galería
+
+### Reconocimiento de Voz
+- [x] Integrar API de Whisper para transcripción de voz
+- [x] Agregar botón de grabación de voz en cada pregunta
+- [x] Implementar transcripción automática de respuestas verbales
+- [x] Mostrar transcripción en tiempo real al usuario
+
+### Personalización de Avatar HeyGen
+- [x] Investigar cómo crear avatar personalizado en HeyGen
+- [x] Configurar voz clonada en español
+- [x] Documentar proceso de personalización para el cliente

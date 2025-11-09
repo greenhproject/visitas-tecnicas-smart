@@ -40,6 +40,10 @@ async function startServer() {
   const { uploadPhotoMiddleware, uploadPhotoHandler } = await import("../uploadPhoto");
   app.post("/api/upload-photo", uploadPhotoMiddleware, uploadPhotoHandler);
   
+  // Audio transcription endpoint
+  const { uploadAudioMiddleware, transcribeAudioHandler } = await import("../transcribe");
+  app.post("/api/transcribe", uploadAudioMiddleware, transcribeAudioHandler);
+  
   // tRPC API
   app.use(
     "/api/trpc",

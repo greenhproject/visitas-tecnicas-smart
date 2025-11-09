@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Camera, Upload, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
 import { APP_LOGO, APP_TITLE } from "@/const";
 import InteractiveAvatar from "@/components/InteractiveAvatar";
+import VoiceRecorder from "@/components/VoiceRecorder";
 
 export default function VisitClient() {
   const [, params] = useRoute("/visit/:token");
@@ -323,6 +324,16 @@ export default function VisitClient() {
                     placeholder="Escribe tu respuesta aquí..."
                     rows={4}
                   />
+                  <div className="flex items-center gap-2 pt-2">
+                    <span className="text-sm text-muted-foreground">O responde con tu voz:</span>
+                    <VoiceRecorder
+                      onTranscription={(text) => {
+                        const currentAnswer = answers[currentQuestion.id] || "";
+                        const newAnswer = currentAnswer ? `${currentAnswer} ${text}` : text;
+                        handleAnswerChange(newAnswer);
+                      }}
+                    />
+                  </div>
                 </div>
               )}
 
