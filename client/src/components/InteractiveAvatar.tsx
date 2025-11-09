@@ -69,8 +69,8 @@ const InteractiveAvatar = forwardRef<InteractiveAvatarRef, InteractiveAvatarProp
         // 1. Crear nueva sesión
         const sessionData = await createSessionMutation.mutateAsync({
           quality: "medium",
-          avatarId: "Pedro_ProfessionalLook_public",
-          voiceId: "fbc81b179407457688c45c0f250ec3ce", // Voz de Pedro en español
+          avatarId: "Wayne_20240711",
+          voiceId: "1bd001e7e50f421d891986aad5158bc8", // Voz en español
         });
 
         if (!sessionData.session_id || !sessionData.url || !sessionData.access_token) {

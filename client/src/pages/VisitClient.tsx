@@ -31,6 +31,7 @@ export default function VisitClient() {
   });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -410,7 +411,7 @@ export default function VisitClient() {
                       type="button"
                       variant="outline"
                       onClick={() => fileInputRef.current?.click()}
-                      className="h-24"
+                      className="h-20 sm:h-24"
                     >
                       <div className="text-center">
                         <Upload className="h-6 w-6 mx-auto mb-2" />
@@ -420,23 +421,32 @@ export default function VisitClient() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={isCameraActive ? stopCamera : startCamera}
-                      className="h-24"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="h-20 sm:h-24"
                     >
                       <div className="text-center">
                         <Camera className="h-6 w-6 mx-auto mb-2" />
-                        <span className="text-sm">
-                          {isCameraActive ? "Cerrar Cámara" : "Tomar Foto"}
-                        </span>
+                        <span className="text-sm">Tomar Foto</span>
                       </div>
                     </Button>
                   </div>
 
+                  {/* Input para subir archivos */}
                   <input
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     multiple
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                  
+                  {/* Input para capturar con cámara (funciona mejor en móvil) */}
+                  <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
                     className="hidden"
                     onChange={handleFileSelect}
                   />

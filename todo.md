@@ -165,3 +165,7 @@
 - [ ] Agregar confirmaciones y feedback del avatar cuando el usuario responde
 - [ ] Implementar guía del avatar para captura de fotos
 - [ ] Agregar despedida del avatar al finalizar el cuestionario
+
+## Problemas Críticos Reportados (2025-11-09)
+- [x] Corregir: Avatar no aparece en la página de visita técnica (actualizado a Wayne_20240711)
+- [x] Corregir: Cámara no se abre en dispositivos móviles al hacer clic en "Tomar Foto" (implementado input con capture="environment")
