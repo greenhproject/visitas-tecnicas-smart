@@ -14,17 +14,36 @@ import { trpc } from "@/lib/trpc";
 import { Plus, Eye, Link as LinkIcon, Copy, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Visits() {
   const utils = trpc.useUtils();
   const { data: visits, isLoading } = trpc.visits.list.useQuery();
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; visitId: number | null; clientName: string }>({ 
+    open: false, 
+    visitId: null, 
+    clientName: "" 
+  });
+  
   const deleteVisit = trpc.visits.delete.useMutation({
     onSuccess: () => {
       toast.success("Visita eliminada exitosamente");
       utils.visits.list.invalidate();
+      setDeleteDialog({ open: false, visitId: null, clientName: "" });
     },
     onError: (error) => {
       toast.error(`Error al eliminar visita: ${error.message}`);
+      setDeleteDialog({ open: false, visitId: null, clientName: "" });
     },
   });
 
@@ -35,10 +54,12 @@ export default function Visits() {
   };
 
   const handleDelete = (visitId: number, clientName: string) => {
-    // Confirmar eliminación directamente con toast
-    const confirmed = confirm(`¿Estás seguro de eliminar la visita de ${clientName}?`);
-    if (confirmed) {
-      deleteVisit.mutate({ id: visitId });
+    setDeleteDialog({ open: true, visitId, clientName });
+  };
+
+  const confirmDelete = () => {
+    if (deleteDialog.visitId) {
+      deleteVisit.mutate({ id: deleteDialog.visitId });
     }
   };
 
@@ -172,6 +193,23 @@ export default function Visits() {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar visita técnica?</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de eliminar la visita de {deleteDialog.clientName}? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

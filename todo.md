@@ -180,3 +180,6 @@
 ## Problemas en Página de Visitas (2025-11-09)
 - [x] Implementar funcionalidad de eliminación de visitas (botón ya funciona, backend implementado)
 - [x] Corregir visualización del nombre del cuestionario (agregado JOIN con tabla questionnaires)
+
+## Problema Botón Eliminar (2025-11-09)
+- [x] Corregir: Botón "Eliminar" no responde al hacer clic (implementado AlertDialog de shadcn/ui)
