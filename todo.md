@@ -183,3 +183,6 @@
 
 ## Problema Botón Eliminar (2025-11-09)
 - [x] Corregir: Botón "Eliminar" no responde al hacer clic (implementado AlertDialog de shadcn/ui)
+
+## Actualización de Avatar (2025-11-09)
+- [x] Cambiar avatar a Silas_CustomerSupport_public para mejor atención al cliente

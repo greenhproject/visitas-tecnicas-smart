@@ -69,7 +69,7 @@ const InteractiveAvatar = forwardRef<InteractiveAvatarRef, InteractiveAvatarProp
         // 1. Crear nueva sesión
         const sessionData = await createSessionMutation.mutateAsync({
           quality: "medium",
-          avatarId: "Eric_public_pro2_20230608", // Avatar público de HeyGen
+          avatarId: "Silas_CustomerSupport_public", // Avatar público de HeyGen para atención al cliente
           voiceId: "1bd001e7e50f421d891986aad5158bc8", // Voz en español
         });
 
